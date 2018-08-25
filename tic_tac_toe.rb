@@ -18,23 +18,37 @@ class Square
 end
 
 class Player
+  attr_reader :name, :symbol
 
+  @@opponent_symbol = nil
+  def initialize(name, symbol)
+    @name = name;
+    symbol = symbol.lstrip.chr
+    if symbol == @@opponent_symbol
+      @symbol = @@opponent_symbol == 'X' ? 'O' : 'X'
+      puts "#{@@opponent_symbol} was selected by your opponent."
+    else
+      if symbol_valid?(symbol)
+        @symbol = symbol
+      else
+        @symbol = @@opponent_symbol == 'X' ? 'O' : 'X'
+        puts "\"#{symbol}\" was not a valid symbol"
+      end
+    end
+    @@opponent_symbol ||= @symbol
+    puts "#{@name} will play with #{@symbol}'s"
+  end
+
+  private
+    def symbol_valid?(symbol)
+      ['O', 'X', '!', '@', '#', '$', '%', '&'].include?(symbol)
+    end
 end
 
-square_one = Square.new(1)
+squares = (1..9).map { |i| Square.new(i) }
 
-puts square_one.index
-puts square_one.filled
-puts square_one.symbol
+player_1 = Player.new("Cody", "X")
+player_2 = Player.new("Danielle", "X")
 
-puts square_one.fill('@')
-
-puts square_one.index
-puts square_one.filled
-puts square_one.symbol
-
-puts square_one.fill('$')
-
-puts square_one.index
-puts square_one.filled
-puts square_one.symbol
+p player_1
+p player_2
