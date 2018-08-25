@@ -10,10 +10,15 @@ class Square
       @filled ? false : handle_fill(symbol)
     end
 
+    def reset
+      @filled = false
+      @symbol = nil
+    end
+
   private
     def handle_fill(symbol)
       @symbol = symbol
-      return @filled = true
+      @filled = true
     end
 end
 
@@ -39,16 +44,77 @@ class Player
     puts "#{@name} will play with #{@symbol}'s"
   end
 
+  public
+    def self.clear
+      @@opponent_symbol = nil
+    end
+
   private
     def symbol_valid?(symbol)
       ['O', 'X', '!', '@', '#', '$', '%', '&'].include?(symbol)
     end
 end
 
-squares = (1..9).map { |i| Square.new(i) }
+play_again_flag = true
+$squares = (1..9).map { |i| Square.new(i) }
 
-player_1 = Player.new("Cody", "X")
-player_2 = Player.new("Danielle", "X")
+def invalid_response
+  puts "That entry was invalid."
+end
 
-p player_1
-p player_2
+def valid_play_again?(response)
+  ['y', 'n'].include?(response)
+end
+
+def another_game
+  play_again = nil
+  until valid_play_again?(play_again)
+    puts "Would you like to play again? (y/n)"
+    play_again = gets.chomp.lstrip.chr.downcase
+    invalid_response unless valid_play_again?(play_again)
+  end
+  play_again
+end
+
+def player_setup(number)
+  puts "Who is player #{number}?"
+  player_name = gets.chomp
+  puts "What symbol would #{player_name} like to use? ('O', 'X', '!', '@', '#', '$', '%', '&')"
+  player_symbol = gets.chomp
+  player = Player.new(player_name, player_symbol)
+end
+
+def display_board
+  puts ""
+  puts "    #{$squares[0].symbol || " "} | #{$squares[1].symbol || " "} | #{$squares[2].symbol || " "}"
+  puts "   -----------"
+  puts "    #{$squares[3].symbol || " "} | #{$squares[4].symbol || " "} | #{$squares[5].symbol || " "} "
+  puts "   -----------"
+  puts "    #{$squares[6].symbol || " "} | #{$squares[7].symbol || " "} | #{$squares[8].symbol || " "}"
+  puts ""
+end
+
+
+while play_again_flag do
+  Player.clear
+  player_1 = player_setup('one')
+  player_2 = player_setup('two')
+  player_1_turn = rand < 0.5
+
+  game_finished = false
+
+  def current_player(bool, p1, p2)
+    bool ? "#{p1.name}(#{p1.symbol})" : "#{p2.name}(#{p2.symbol})"
+  end
+
+  puts "#{current_player(player_1_turn, player_1, player_2)} will go first."
+
+  until game_finished
+    display_board
+
+    game_finished = true
+
+  end
+
+  play_again_flag = another_game == 'y'
+end
