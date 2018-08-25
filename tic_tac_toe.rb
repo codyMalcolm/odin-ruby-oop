@@ -86,35 +86,76 @@ end
 
 def display_board
   puts ""
-  puts "    #{$squares[0].symbol || " "} | #{$squares[1].symbol || " "} | #{$squares[2].symbol || " "}"
+  puts "    #{$squares[0].symbol || "1"} | #{$squares[1].symbol || "2"} | #{$squares[2].symbol || "3"}"
   puts "   -----------"
-  puts "    #{$squares[3].symbol || " "} | #{$squares[4].symbol || " "} | #{$squares[5].symbol || " "} "
+  puts "    #{$squares[3].symbol || "4"} | #{$squares[4].symbol || "5"} | #{$squares[5].symbol || "6"} "
   puts "   -----------"
-  puts "    #{$squares[6].symbol || " "} | #{$squares[7].symbol || " "} | #{$squares[8].symbol || " "}"
+  puts "    #{$squares[6].symbol || "7"} | #{$squares[7].symbol || "8"} | #{$squares[8].symbol || "9"}"
   puts ""
 end
 
+def valid_square?(selection, symbol)
+  index = selection.to_i
+  return false unless [1,2,3,4,5,6,7,8,9].include?(index)
+  $squares[index-1].fill(symbol)
+end
+
+def did_player_win?
+  winning_sequences =
+    [[0,3,6], [1,4,7], [2,5,8], [0, 4, 8], [2, 4, 6],
+    [0, 1, 2], [3, 4, 5], [6, 7, 8]]
+
+  winning_sequences.any? do |sequence|
+    $squares[sequence[0]].filled &&
+    $squares[sequence[0]].symbol == $squares[sequence[1]].symbol &&
+    $squares[sequence[0]].symbol == $squares[sequence[2]].symbol
+  end
+end
+
+def did_players_tie?
+  $squares.all? { |s| s.filled }
+end
 
 while play_again_flag do
   Player.clear
-  player_1 = player_setup('one')
-  player_2 = player_setup('two')
-  player_1_turn = rand < 0.5
+  $squares.each { |s| s.reset }
+  $player_1 = player_setup('one')
+  $player_2 = player_setup('two')
+  $player_1_turn = rand < 0.5
 
   game_finished = false
 
-  def current_player(bool, p1, p2)
-    bool ? "#{p1.name}(#{p1.symbol})" : "#{p2.name}(#{p2.symbol})"
+  def current_player
+    $player_1_turn ? "#{$player_1.name}(#{$player_1.symbol})" : "#{$player_2.name}(#{$player_2.symbol})"
   end
 
-  puts "#{current_player(player_1_turn, player_1, player_2)} will go first."
+  def play_turn
+    display_board
+    puts "It's #{current_player}'s turn."
+    puts "Please select the square you would like to mark."
+    selection = gets.chomp.lstrip.chr
+    player_symbol = $player_1_turn ? $player_1.symbol : $player_2.symbol
+
+    until valid_square?(selection, player_symbol)
+      puts "That was a not a valid selection. Please select one of the available squares."
+      selection = gets.chomp.lstrip.chr
+    end
+
+    $player_1_turn = !$player_1_turn
+  end
+
+  puts "#{current_player} will go first."
+
+  temp = 0
 
   until game_finished
-    display_board
-
-    game_finished = true
-
+    play_turn
+    game_finished = did_player_win? || did_players_tie?
   end
+
+  display_board
+
+  puts did_player_win? ? "#{$player_1_turn ? $player_2.name : $player_1.name} wins this round!" : "The game is a draw!"
 
   play_again_flag = another_game == 'y'
 end
