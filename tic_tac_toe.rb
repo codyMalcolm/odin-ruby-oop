@@ -153,3 +153,5 @@ while play_again_flag do
 
   play_again_flag = another_game == 'y'
 end
+
+puts "Thanks for playing!"
